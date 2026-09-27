@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add gear · Little League Locker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=Source+Sans+3:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <header class="app-header">
+        <div class="header-inner">
+            <a class="brand" href="index.html">
+                <svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true">
+                    <circle cx="24" cy="24" r="22" fill="#f7f3ea" />
+                    <path d="M10 16c8 6 8 10 0 16M38 16c-8 6-8 10 0 16" fill="none" stroke="#b42318" stroke-width="2"
+                        stroke-linecap="round" />
+                </svg>
+                <span>
+                    <p class="brand-kicker">Riverside Little League</p>
+                    <p class="brand-title">Equipment Locker</p>
+                </span>
+            </a>
+        </div>
+    </header>
+    <nav class="app-nav" aria-label="Primary">
+        <div class="nav-inner">
+            <a href="equipment.html" aria-current="page">Equipment</a>
+            <a href="tickets.html">Tickets</a>
+        </div>
+    </nav>
+
+    <main class="page">
+        <header class="page-head">
+            <div>
+                <p class="eyebrow">Inventory</p>
+                <h1>Add gear</h1>
+                <p class="lede">Add a new item to the equipment locker.</p>
+            </div>
+        </header>
+
+        <section class="card panel">
+            <form class="form" id="add-gear-form">
+                <label>
+                    Gear name
+                    <input type="text" name="name" required placeholder="For example, softball gloves">
+                </label>
+                <label>
+                    Total quantity
+                    <input type="number" name="quantity" required min="1" step="1" placeholder="12">
+                </label>
+                <div class="actions">
+                    <button class="btn btn-primary" type="submit">Add gear</button>
+                    <a class="btn btn-secondary" href="equipment.html">Cancel</a>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <script>
+        document.querySelector('#add-gear-form').addEventListener('submit', (event) => {
+            event.preventDefault();
+            const formData = new FormData(event.currentTarget);
+            const addedGear = JSON.parse(localStorage.getItem('addedGear') || '[]');
+
+            addedGear.push({
+                name: formData.get('name').trim(),
+                quantity: Number(formData.get('quantity'))
+            });
+            localStorage.setItem('addedGear', JSON.stringify(addedGear));
+            window.location.href = 'equipment.html';
+        });
+    </script>
+</body>
+
+</html>

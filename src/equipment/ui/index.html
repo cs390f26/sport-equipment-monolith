@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UI mocks · Little League Locker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <a class="brand" href="index.html">
+        <svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true">
+          <circle cx="24" cy="24" r="22" fill="#f7f3ea"/>
+          <path d="M10 16c8 6 8 10 0 16M38 16c-8 6-8 10 0 16" fill="none" stroke="#b42318" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span>
+          <p class="brand-kicker">Riverside Little League</p>
+          <p class="brand-title">Equipment Locker</p>
+        </span>
+      </a>
+    </div>
+  </header>
+  <nav class="app-nav" aria-label="Primary">
+    <div class="nav-inner">
+      <a href="equipment.html">Equipment</a>
+      <a href="tickets.html">Tickets</a>
+    </div>
+  </nav>
+
+  <main class="page">
+    <header class="page-head">
+      <div>
+        <p class="eyebrow">Spec mocks</p>
+        <h1>Screens</h1>
+        <p class="lede">One HTML page per use case.</p>
+      </div>
+    </header>
+
+    <section class="screen-index" aria-label="Use case screens">
+      <a class="card" href="equipment.html">
+        <strong>Browse equipment</strong>
+        <span>List with data — every item is a button showing name and quantity.</span>
+      </a>
+      <a class="card" href="create-ticket.html">
+        <strong>Create a ticket</strong>
+        <span>Name and quantity for one item. Cancel returns to the equipment list.</span>
+      </a>
+      <a class="card" href="ticket.html">
+        <strong>Open a ticket to return</strong>
+        <span>Existing ticket shows the item, quantity, and a return action.</span>
+      </a>
+      <a class="card" href="tickets.html">
+        <strong>View results</strong>
+        <span>All open tickets with name, item, quantity, and a return action.</span>
+      </a>
+    </section>
+  </main>
+</body>
+</html>
