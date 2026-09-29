@@ -1,6 +1,7 @@
 import sys
+from pathlib import Path
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 
 from equipment.db import DatabaseUnavailableError, EquipmentStorage
 from equipment.locker import (
@@ -47,7 +48,12 @@ def _ticket_json(ticket: TicketData) -> dict:
 
 def create_app(locker_app: LockerApp) -> Flask:
     """Build the Flask app and add routes."""
-    app = Flask(__name__)
+    ui_dir = Path(__file__).resolve().parents[1] / "ui"
+    app = Flask(__name__, static_folder=str(ui_dir), static_url_path="")
+
+    @app.get("/")
+    def index():
+        return send_from_directory(app.static_folder, "index.html")
 
     @app.get("/health")
     def health():

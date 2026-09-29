@@ -27,7 +27,6 @@
   <nav class="app-nav" aria-label="Primary">
     <div class="nav-inner">
       <a href="equipment.html">Equipment</a>
-      <a href="tickets.html">Tickets</a>
     </div>
   </nav>
 
@@ -43,19 +42,23 @@
     <section class="screen-index" aria-label="Use case screens">
       <a class="card" href="equipment.html">
         <strong>Browse equipment</strong>
-        <span>List with data — every item is a button showing name and quantity.</span>
+        <span>Each item is a button showing available/total. Pressing it opens that item's tickets.</span>
+      </a>
+      <a class="card" href="add-gear.html">
+        <strong>Add equipment</strong>
+        <span>Name and quantity. Cancel returns to the equipment list.</span>
+      </a>
+      <a class="card" href="list-tickets.html">
+        <strong>View open tickets</strong>
+        <span>Open tickets for selected equipment item only, with borrower name and quantity.</span>
       </a>
       <a class="card" href="create-ticket.html">
         <strong>Create a ticket</strong>
-        <span>Name and quantity for one item. Cancel returns to the equipment list.</span>
+        <span>Name and quantity for selected equipment item. Cancel returns to that item's ticket list.</span>
       </a>
       <a class="card" href="ticket.html">
-        <strong>Open a ticket to return</strong>
-        <span>Existing ticket shows the item, quantity, and a return action.</span>
-      </a>
-      <a class="card" href="tickets.html">
-        <strong>View results</strong>
-        <span>All open tickets with name, item, quantity, and a return action.</span>
+        <strong>Return ticket</strong>
+        <span>Return specific ticket and go back to the selected equipment item's ticket list.</span>
       </a>
     </section>
   </main>

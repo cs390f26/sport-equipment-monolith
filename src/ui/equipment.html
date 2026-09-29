@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Equipment · Little League Locker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=Source+Sans+3:wght@400;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <a class="brand" href="index.html">
+        <svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true">
+          <circle cx="24" cy="24" r="22" fill="#f7f3ea" />
+          <path d="M10 16c8 6 8 10 0 16M38 16c-8 6-8 10 0 16" fill="none" stroke="#b42318" stroke-width="2"
+            stroke-linecap="round" />
+        </svg>
+        <span>
+          <p class="brand-kicker">Riverside Little League</p>
+          <p class="brand-title">Equipment Locker</p>
+        </span>
+      </a>
+    </div>
+  </header>
+  <nav class="app-nav" aria-label="Primary">
+    <div class="nav-inner">
+      <a href="equipment.html" aria-current="page">Equipment</a>
+    </div>
+  </nav>
+
+  <main class="page">
+    <header class="page-head">
+      <div>
+        <p class="eyebrow">Browse equipment</p>
+        <h1>Available gear</h1>
+        <p class="lede">Choose an item to see who has it out.</p>
+      </div>
+      <div class="page-head-actions">
+        <p class="stat-pill">Loading...</p>
+        <a class="btn btn-primary" href="add-gear.html">Add gear</a>
+      </div>
+    </header>
+
+    <section class="grid equipment-grid" aria-label="Equipment list"></section>
+  </main>
+
+  <script>
+    async function loadEquipment() {
+      const response = await fetch('/equipment');
+      if (!response.ok) {
+        throw new Error('Could not load equipment');
+      }
+      const items = await response.json();
+      const grid = document.querySelector('.equipment-grid');
+      const stat = document.querySelector('.stat-pill');
+
+      grid.innerHTML = '';
+      items.forEach((item) => {
+        const link = document.createElement('a');
+        link.className = 'card equipment-btn';
+        link.href = `list-tickets.html?equipmentId=${item.equipmentId}`;
+        link.innerHTML = `
+          <h2 class="item-name">${item.itemName}</h2>
+          <p class="qty"><b>${item.available}/${item.total}</b> <span>available</span></p>
+        `;
+        grid.appendChild(link);
+      });
+
+      stat.textContent = `${items.length} items in the locker`;
+    }
+
+    loadEquipment().catch((error) => {
+      document.querySelector('.stat-pill').textContent = 'Unable to load equipment';
+      console.error(error);
+    });
+  </script>
+</body>
+
+</html>

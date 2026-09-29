@@ -32,7 +32,6 @@
     <nav class="app-nav" aria-label="Primary">
         <div class="nav-inner">
             <a href="equipment.html" aria-current="page">Equipment</a>
-            <a href="tickets.html">Tickets</a>
         </div>
     </nav>
 
@@ -47,13 +46,14 @@
 
         <section class="card panel">
             <form class="form" id="add-gear-form">
+                <div id="form-error" class="form-error" aria-live="polite"></div>
                 <label>
                     Gear name
-                    <input type="text" name="name" required placeholder="For example, softball gloves">
+                    <input type="text" name="itemName" required placeholder="For example, softball gloves">
                 </label>
                 <label>
                     Total quantity
-                    <input type="number" name="quantity" required min="1" step="1" placeholder="12">
+                    <input type="number" name="total" required min="1" step="1" placeholder="12">
                 </label>
                 <div class="actions">
                     <button class="btn btn-primary" type="submit">Add gear</button>
@@ -64,16 +64,36 @@
     </main>
 
     <script>
-        document.querySelector('#add-gear-form').addEventListener('submit', (event) => {
+        document.querySelector('#add-gear-form').addEventListener('submit', async (event) => {
             event.preventDefault();
-            const formData = new FormData(event.currentTarget);
-            const addedGear = JSON.parse(localStorage.getItem('addedGear') || '[]');
+            const form = event.currentTarget;
+            const formError = document.querySelector('#form-error');
+            const itemName = form.elements.itemName.value.trim();
+            const total = Number(form.elements.total.value);
 
-            addedGear.push({
-                name: formData.get('name').trim(),
-                quantity: Number(formData.get('quantity'))
+            formError.textContent = '';
+
+            if (!itemName) {
+                formError.textContent = 'Item name is required.';
+                return;
+            }
+            if (!Number.isInteger(total) || total < 1) {
+                formError.textContent = 'Total quantity must be a positive integer.';
+                return;
+            }
+
+            const response = await fetch('/equipment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ itemName, total })
             });
-            localStorage.setItem('addedGear', JSON.stringify(addedGear));
+
+            if (!response.ok) {
+                const payload = await response.json().catch(() => ({}));
+                formError.textContent = payload.message || 'Unable to add gear.';
+                return;
+            }
+
             window.location.href = 'equipment.html';
         });
     </script>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Open tickets · Little League Locker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=Source+Sans+3:wght@400;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <a class="brand" href="index.html">
+        <svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true">
+          <circle cx="24" cy="24" r="22" fill="#f7f3ea" />
+          <path d="M10 16c8 6 8 10 0 16M38 16c-8 6-8 10 0 16" fill="none" stroke="#b42318" stroke-width="2"
+            stroke-linecap="round" />
+        </svg>
+        <span>
+          <p class="brand-kicker">Riverside Little League</p>
+          <p class="brand-title">Equipment Locker</p>
+        </span>
+      </a>
+    </div>
+  </header>
+  <nav class="app-nav" aria-label="Primary">
+    <div class="nav-inner">
+      <a href="equipment.html">Equipment</a>
+    </div>
+  </nav>
+
+  <main class="page">
+    <header class="page-head">
+      <div>
+        <p class="eyebrow">Open tickets</p>
+        <h1 id="item-name">Loading...</h1>
+        <p class="lede">Open tickets for this item. Choose one to view or return it.</p>
+      </div>
+      <div class="page-head-actions">
+        <p class="stat-pill">Loading...</p>
+        <a id="add-ticket-link" class="btn btn-primary" href="create-ticket.html">Add ticket</a>
+      </div>
+    </header>
+
+    <section id="ticket-list" class="ticket-list" aria-label="Open tickets for this item"></section>
+  </main>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const equipmentId = params.get('equipmentId');
+    const ticketList = document.querySelector('#ticket-list');
+    const itemNameEl = document.querySelector('#item-name');
+    const statEl = document.querySelector('.stat-pill');
+    const addTicketLink = document.querySelector('#add-ticket-link');
+
+    if (!equipmentId) {
+      itemNameEl.textContent = 'Equipment not selected';
+      statEl.textContent = 'Missing equipment ID';
+      ticketList.innerHTML = '<p class="page-error">No equipment selected.</p>';
+      addTicketLink.href = 'equipment.html';
+    } else {
+      addTicketLink.href = `create-ticket.html?equipmentId=${equipmentId}`;
+      Promise.all([
+        fetch('/equipment'),
+        fetch(`/tickets?equipmentId=${encodeURIComponent(equipmentId)}`)
+      ])
+        .then(async ([equipmentResponse, ticketsResponse]) => {
+          if (!equipmentResponse.ok || !ticketsResponse.ok) {
+            throw new Error('Unable to load tickets');
+          }
+          const equipment = await equipmentResponse.json();
+          const tickets = await ticketsResponse.json();
+          const item = equipment.find((entry) => entry.equipmentId === equipmentId);
+
+          if (!item) {
+            throw new Error('Equipment not found');
+          }
+
+          itemNameEl.textContent = item.itemName;
+          statEl.textContent = `${tickets.length} ticket${tickets.length === 1 ? '' : 's'}`;
+
+          if (tickets.length === 0) {
+            ticketList.innerHTML = '<p class="empty-state">No open tickets for this item.</p>';
+            return;
+          }
+
+          ticketList.innerHTML = tickets.map((ticket) => `
+            <a class="card ticket-row" href="ticket.html?ticketId=${ticket.ticketId}">
+              <div>
+                <h2 class="item-name">${ticket.name}</h2>
+                <p class="ticket-meta"><span>Qty ${ticket.quantity}</span></p>
+              </div>
+              <span class="btn btn-primary">View ticket</span>
+            </a>
+          `).join('');
+        })
+        .catch((error) => {
+          console.error(error);
+          itemNameEl.textContent = 'Unable to load tickets';
+          statEl.textContent = 'Error';
+          ticketList.innerHTML = '<p class="page-error">Unable to load this item\'s tickets.</p>';
+        });
+    }
+  </script>
+</body>
+
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Open a ticket to return · Little League Locker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <div class="header-inner">
+      <a class="brand" href="index.html">
+        <svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true">
+          <circle cx="24" cy="24" r="22" fill="#f7f3ea"/>
+          <path d="M10 16c8 6 8 10 0 16M38 16c-8 6-8 10 0 16" fill="none" stroke="#b42318" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span>
+          <p class="brand-kicker">Riverside Little League</p>
+          <p class="brand-title">Equipment Locker</p>
+        </span>
+      </a>
+    </div>
+  </header>
+  <nav class="app-nav" aria-label="Primary">
+    <div class="nav-inner">
+      <a href="equipment.html">Equipment</a>
+    </div>
+  </nav>
+
+  <main class="page">
+    <header class="page-head">
+      <div>
+        <p class="eyebrow">Open a ticket to return</p>
+        <h1 id="ticket-heading">Loading...</h1>
+        <p class="lede">Return the item to the locker.</p>
+      </div>
+    </header>
+
+    <section id="ticket-panel" class="card panel">
+      <div id="page-error" class="page-error" aria-live="polite"></div>
+      <dl class="detail-grid">
+        <div>
+          <dt>Borrower</dt>
+          <dd id="borrower">-</dd>
+        </div>
+        <div>
+          <dt>Item</dt>
+          <dd id="item-name">-</dd>
+        </div>
+        <div>
+          <dt>Quantity</dt>
+          <dd id="quantity">-</dd>
+        </div>
+        <div>
+          <dt>Created</dt>
+          <dd id="created-at">-</dd>
+        </div>
+      </dl>
+      <div class="actions">
+        <button id="return-button" class="btn btn-danger" type="button">Return item</button>
+        <a id="back-link" class="btn btn-secondary" href="equipment.html">Back to tickets</a>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const ticketId = params.get('ticketId');
+    const pageError = document.querySelector('#page-error');
+    const ticketHeading = document.querySelector('#ticket-heading');
+    const borrowerEl = document.querySelector('#borrower');
+    const itemNameEl = document.querySelector('#item-name');
+    const quantityEl = document.querySelector('#quantity');
+    const createdAtEl = document.querySelector('#created-at');
+    const returnButton = document.querySelector('#return-button');
+    const backLink = document.querySelector('#back-link');
+
+    if (!ticketId) {
+      ticketHeading.textContent = 'Ticket missing';
+      pageError.textContent = 'No ticket ID was provided.';
+      returnButton.hidden = true;
+      backLink.href = 'equipment.html';
+    } else {
+      Promise.all([
+        fetch(`/tickets/${encodeURIComponent(ticketId)}`),
+        fetch('/equipment')
+      ])
+        .then(async ([ticketResponse, equipmentResponse]) => {
+          if (!ticketResponse.ok) {
+            throw new Error('Ticket not found');
+          }
+          if (!equipmentResponse.ok) {
+            throw new Error('Unable to load equipment');
+          }
+
+          const ticket = await ticketResponse.json();
+          const equipment = await equipmentResponse.json();
+          const item = equipment.find((entry) => entry.equipmentId === ticket.equipmentId);
+          const itemName = item ? item.itemName : 'Unknown item';
+          const equipmentId = ticket.equipmentId;
+
+          ticketHeading.textContent = `Ticket ${ticket.ticketId}`;
+          borrowerEl.textContent = ticket.name;
+          itemNameEl.textContent = itemName;
+          quantityEl.textContent = String(ticket.quantity);
+          createdAtEl.textContent = new Date(ticket.createdAt).toLocaleString();
+          backLink.href = `list-tickets.html?equipmentId=${equipmentId}`;
+
+          returnButton.addEventListener('click', async () => {
+            const response = await fetch(`/tickets/${encodeURIComponent(ticket.ticketId)}`, { method: 'DELETE' });
+            if (!response.ok) {
+              pageError.textContent = 'Could not return this ticket.';
+              return;
+            }
+            window.location.href = `list-tickets.html?equipmentId=${equipmentId}`;
+          });
+        })
+        .catch((error) => {
+          console.error(error);
+          ticketHeading.textContent = 'Ticket unavailable';
+          pageError.textContent = 'This ticket could not be loaded.';
+          returnButton.hidden = true;
+          backLink.href = 'equipment.html';
+        });
+    }
+  </script>
+</body>
+</html>

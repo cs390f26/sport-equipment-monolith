@@ -12,6 +12,12 @@ def client(store):
     return flask_app.test_client()
 
 
+def test_root_serves_ui(client):
+    response = client.get("/")
+    assert response.status_code == 200
+    assert "Riverside Little League" in response.get_data(as_text=True)
+
+
 def test_health_ok(client):
     response = client.get("/health")
     assert response.status_code == 200
