@@ -1,0 +1,19 @@
+[Unit]
+Description=MySQL Local for the equipment app
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=notify
+User=mysql
+Group=mysql
+ExecStartPre=+/usr/bin/mysqld_pre_systemd
+ExecStart=/usr/sbin/mysqld --bind-address=127.0.0.1 --port=3306
+Environment=MYSQLD_PARENT_PID=1
+Restart=on-failure
+RestartPreventExitStatus=1
+RestartSec=5
+TimeoutStartSec=300
+
+[Install]
+WantedBy=multi-user.target

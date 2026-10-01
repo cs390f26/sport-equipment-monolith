@@ -1,4 +1,4 @@
-"""Wait until Aurora MySQL accepts a connection (CI and systemd ExecStartPre)."""
+"""Wait until MySQL accepts a connection (CI and systemd ExecStartPre)."""
 
 import argparse
 import sys
@@ -9,17 +9,17 @@ import pymysql
 from equipment.settings import ensure_settings
 
 
-def wait_for_aurora(settings: dict[str, str], timeout_seconds: int) -> None:
+def wait_for_mysql(settings: dict[str, str], timeout_seconds: int) -> None:
     deadline = time.monotonic() + timeout_seconds
     last_error = "connection failed"
     while time.monotonic() < deadline:
         try:
             connection = pymysql.connect(
-                host=settings["AURORA_HOST"],
-                port=int(settings["AURORA_PORT"]),
-                user=settings["AURORA_USER"],
-                password=settings["AURORA_PASSWORD"],
-                database=settings["AURORA_DATABASE"],
+                host=settings["MYSQL_HOST"],
+                port=int(settings["MYSQL_PORT"]),
+                user=settings["MYSQL_USER"],
+                password=settings["MYSQL_PASSWORD"],
+                database=settings["MYSQL_DATABASE"],
                 connect_timeout=1,
             )
             connection.close()
@@ -31,14 +31,14 @@ def wait_for_aurora(settings: dict[str, str], timeout_seconds: int) -> None:
             last_error = str(exc)
             time.sleep(1)
     raise TimeoutError(
-        f"Aurora did not become ready within {timeout_seconds}s "
-        f"(host {settings['AURORA_HOST']!r}). Details: {last_error}"
+        f"MySQL did not become ready within {timeout_seconds}s "
+        f"(host {settings['MYSQL_HOST']!r}). Details: {last_error}"
     )
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Wait until Aurora MySQL accepts a connection."
+        description="Wait until MySQL accepts a connection."
     )
     parser.add_argument(
         "--timeout",
@@ -55,12 +55,12 @@ def main() -> None:
         sys.exit(1)
 
     try:
-        wait_for_aurora(settings, args.timeout)
+        wait_for_mysql(settings, args.timeout)
     except TimeoutError as exc:
         print(exc, file=sys.stderr)
         sys.exit(1)
 
-    print("Aurora is ready.")
+    print("MySQL is ready.")
 
 
 if __name__ == "__main__":
