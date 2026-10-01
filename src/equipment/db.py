@@ -384,7 +384,11 @@ class EquipmentStorage:
                 cursor.execute(sql, params)
                 rows = cursor.fetchall() if fetch else ()
                 rowcount = cursor.rowcount
-            if commit:
+            # End read transactions too. MySQL REPEATABLE READ keeps the
+            # snapshot from the first SELECT until commit or rollback.
+            # Gunicorn reuses each worker's connection, so an open read
+            # hides rows the other worker already committed.
+            if commit or fetch:
                 connection.commit()
             return rows, rowcount
         except IntegrityError:
@@ -402,7 +406,7 @@ class EquipmentStorage:
             cursor = self._conn.execute(sql.replace("%s", "?"), params or ())
             rows = [dict(row) for row in cursor.fetchall()] if fetch else ()
             rowcount = cursor.rowcount
-            if commit:
+            if commit or fetch:
                 self._conn.commit()
             return rows, rowcount
         except sqlite3.IntegrityError:
