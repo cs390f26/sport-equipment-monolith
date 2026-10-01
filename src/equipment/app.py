@@ -159,7 +159,7 @@ def launch() -> Flask:
         storage.ping()
     except DatabaseUnavailableError as exc:
         raise RuntimeError(
-            "Database not reachable. Is Aurora running? "
+            "Database not reachable. Is MySQL running? "
             "Are the Equipment and Ticket tables created "
             "(python scripts/create_table.py)? "
             f"Details: {exc}"

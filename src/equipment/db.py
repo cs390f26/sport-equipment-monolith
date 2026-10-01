@@ -1,5 +1,6 @@
 import re
 import sqlite3
+import threading
 
 import pymysql
 from pymysql.err import IntegrityError
@@ -12,7 +13,7 @@ from equipment.types import (
 )
 
 # Same tables as the specs. Available quantity is not a column.
-# Aurora MySQL uses InnoDB, which enforces the ticket foreign key.
+# MySQL uses InnoDB, which enforces the ticket foreign key.
 EQUIPMENT_SQL = """
 CREATE TABLE IF NOT EXISTS Equipment (
   equipmentId VARCHAR(32) PRIMARY KEY,
@@ -58,7 +59,7 @@ _DATABASE_NAME = re.compile(r"^[A-Za-z0-9_]+$")
 
 
 class DatabaseUnavailableError(Exception):
-    """Raised when Aurora or the tables cannot be used."""
+    """Raised when MySQL or the tables cannot be used."""
 
 
 class EquipmentAlreadyExistsError(Exception):
@@ -80,8 +81,10 @@ class TicketNotFoundError(Exception):
 class EquipmentStorage:
     """Stores equipment and tickets.
 
-    The running app uses Aurora MySQL (from_settings). Unit tests use
-    in_memory(), an in-process database, so pytest does not need Aurora.
+    The running app uses MySQL (from_settings). Flask serves requests on
+    more than one thread, and a pymysql connection cannot be shared, so
+    each thread keeps its own connection. Unit tests use in_memory(), an
+    in-process database, so pytest does not need MySQL.
     """
 
     def __init__(self, host: str, port: int, user: str, password: str, database: str):
@@ -104,7 +107,7 @@ class EquipmentStorage:
         self._user = user
         self._password = password
         self._database = database
-        self._conn = None
+        self._local = threading.local()
         self._memory = False
 
     @classmethod
@@ -122,21 +125,27 @@ class EquipmentStorage:
     def from_settings(cls, settings: dict[str, str]) -> "EquipmentStorage":
         """Build storage from ensure_settings() values."""
         return cls(
-            host=settings["AURORA_HOST"],
-            port=int(settings["AURORA_PORT"]),
-            user=settings["AURORA_USER"],
-            password=settings["AURORA_PASSWORD"],
-            database=settings["AURORA_DATABASE"],
+            host=settings["MYSQL_HOST"],
+            port=int(settings["MYSQL_PORT"]),
+            user=settings["MYSQL_USER"],
+            password=settings["MYSQL_PASSWORD"],
+            database=settings["MYSQL_DATABASE"],
         )
 
     def close(self) -> None:
-        """Close the Aurora connection if it is open."""
-        if self._conn is not None:
-            self._conn.close()
-            self._conn = None
+        """Close this thread's database connection if it is open."""
+        if self._memory:
+            if self._conn is not None:
+                self._conn.close()
+                self._conn = None
+            return
+        connection = getattr(self._local, "conn", None)
+        if connection is not None:
+            connection.close()
+            self._local.conn = None
 
     def ensure_database(self) -> None:
-        """Create the Aurora database if it does not exist.
+        """Create the MySQL database if it does not exist.
 
         Connects without selecting a database, so this works before the
         schema exists. No-op for the in-memory test database.
@@ -197,7 +206,7 @@ class EquipmentStorage:
         return {"equipment", "ticket"} <= names
 
     def ping(self) -> None:
-        """Check that Aurora is reachable and both tables exist.
+        """Check that MySQL is reachable and both tables exist.
 
         Raises DatabaseUnavailableError if the connection fails or a table
         is missing.
@@ -336,10 +345,12 @@ class EquipmentStorage:
             raise TicketNotFoundError(f"ticket {ticket_id!r} not found")
 
     def _connect(self):
-        if self._conn is not None and self._conn.open:
-            return self._conn
+        """Return this thread's MySQL connection, opening one if needed."""
+        connection = getattr(self._local, "conn", None)
+        if connection is not None and connection.open:
+            return connection
         try:
-            self._conn = pymysql.connect(
+            connection = pymysql.connect(
                 host=self._host,
                 port=self._port,
                 user=self._user,
@@ -352,7 +363,17 @@ class EquipmentStorage:
             )
         except pymysql.MySQLError as exc:
             raise DatabaseUnavailableError(f"database unavailable: {exc}") from exc
-        return self._conn
+        self._local.conn = connection
+        return connection
+
+    def _discard_mysql(self, connection) -> None:
+        """Drop a connection a query left unusable."""
+        try:
+            connection.close()
+        except pymysql.MySQLError:
+            pass
+        if getattr(self._local, "conn", None) is connection:
+            self._local.conn = None
 
     def _execute(self, sql: str, params=None, *, commit: bool = False, fetch: bool = False):
         if self._memory:
@@ -370,7 +391,11 @@ class EquipmentStorage:
             connection.rollback()
             raise
         except pymysql.MySQLError as exc:
+            self._discard_mysql(connection)
             raise DatabaseUnavailableError(f"database unavailable: {exc}") from exc
+        except Exception:
+            self._discard_mysql(connection)
+            raise
 
     def _execute_memory(self, sql: str, params, *, commit: bool, fetch: bool):
         try:

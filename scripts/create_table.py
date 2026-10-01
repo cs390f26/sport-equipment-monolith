@@ -1,4 +1,4 @@
-"""Create the Equipment and Ticket tables in Aurora.
+"""Create the Equipment and Ticket tables in MySQL.
 
 Fails if both tables already exist. To reset, run delete_table.py first.
 """

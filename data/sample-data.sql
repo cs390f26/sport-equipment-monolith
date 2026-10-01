@@ -1,4 +1,4 @@
--- Sample data for AWS Aurora.
+-- Sample data for MySQL.
 -- use this for seeding and automated tests.
 -- total is the amount owned. Available is total minus open ticket quantities for that equipment.
 

@@ -1,6 +1,6 @@
 # Development Setup and Startup
 
-This project is a Flask app that uses a MySQL-compatible database (Aurora/local MySQL) and a Python 3.12+ environment. The app is started with the Flask entry point in `src/equipment/app.py`, and it expects environment settings from a `.env` file before it can connect to the database.
+This project is a Flask app that uses MySQL and a Python 3.12+ environment. The app is started with the Flask entry point in `src/equipment/app.py`, and it expects environment settings from a `.env` file before it can connect to the database.
 
 ## Prerequisites
 
@@ -8,7 +8,7 @@ Before you start, make sure you have:
 
 - Python 3.12 or newer
 - `pip` for installing Python packages
-- A local MySQL-compatible server or Aurora instance available
+- A local MySQL server available
 - A terminal with access to the repository root
 
 The project declares its Python requirement in `setup.py` and its runtime packages in `requirements.txt`.
@@ -43,14 +43,14 @@ Create a `.env` file in the project root based on the example template:
 cp config/example.env .env
 ```
 
-The example file contains the required Aurora/MySQL settings:
+The example file contains the required MySQL settings:
 
 ```env
-AURORA_HOST=127.0.0.1
-AURORA_PORT=3306
-AURORA_USER=root
-AURORA_PASSWORD=
-AURORA_DATABASE=equipment
+MYSQL_HOST=127.0.0.1
+MYSQL_PORT=3306
+MYSQL_USER=root
+MYSQL_PASSWORD=<replace with your password>
+MYSQL_DATABASE=equipment
 ```
 
 Update the values to match your local database setup. The app loads these values automatically via `python-dotenv`.
@@ -59,12 +59,17 @@ Update the values to match your local database setup. The app loads these values
 
 ## 4. Start the database
 
-Make sure your MySQL-compatible database is running before starting the app.
+Make sure your MySQL server is running before starting the app in a new terminal.
+```bash
+mysql -u root -p
+```
 
-If you are using a fresh local database, create the required tables:
+If you are using a fresh local database, create the required tables in virtual environment:
 
 ```bash
 python scripts/create_table.py
+python scripts/seed.py
+
 ```
 
 This script creates the `Equipment` and `Ticket` tables in the configured database.
@@ -75,9 +80,16 @@ If you need to reset the schema later, you can also delete the tables with:
 python scripts/delete_table.py
 ```
 
+To verify `Equipment` and `Ticket` tables are in database in MySQL terminal.
+
+```bash
+USE equipment;
+SHOW TABLES;
+```
+
 ## 5. Start the app
 
-Once the database is available and the environment is configured, run:
+Once the database is available and the environment is configured, run in virtual environment:
 
 ```bash
 python -m equipment.app
@@ -101,7 +113,7 @@ The repository uses `pytest` for automated tests. From the project root after in
 pytest -q
 ```
 
-This is the standard verification command for the project. Unit tests use an in-memory SQLite database, so they do not require a running Aurora instance. The application itself, however, still expects the configured Aurora/MySQL connection when running the full app.
+This is the standard verification command for the project. Unit tests use an in-memory SQLite database, so they do not require a running MySQL server. The application itself, however, still expects the configured MySQL connection when running the full app.
 
 ## Useful notes
 
@@ -128,6 +140,7 @@ python -m pip install -r requirements.txt
 python -m pip install -e .
 cp config/example.env .env
 python scripts/create_table.py
+python scripts/seed.py
 python -m equipment.app
 ```
 

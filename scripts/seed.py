@@ -1,4 +1,4 @@
-"""Load scenario 1 from the specs sample data into Aurora.
+"""Load scenario 1 from the specs sample data into MySQL.
 
 The tables must already exist (python scripts/create_table.py).
 """
@@ -45,7 +45,7 @@ def main() -> None:
         load_locker(storage)
     except DatabaseUnavailableError as exc:
         print(
-            "Aurora is missing or unreachable. "
+            "MySQL is missing or unreachable. "
             "Create the tables first: python scripts/create_table.py\n"
             f"Details: {exc}",
             file=sys.stderr,

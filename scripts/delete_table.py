@@ -1,4 +1,4 @@
-"""Drop the Equipment and Ticket tables in Aurora.
+"""Drop the Equipment and Ticket tables in MySQL.
 
 Prompts for confirmation unless -y is passed.
 """
