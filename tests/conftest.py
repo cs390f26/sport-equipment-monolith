@@ -3,8 +3,8 @@ import pytest
 from equipment.db import EquipmentStorage
 
 # Fixtures here are available to every test module in this directory.
-# Unit tests use an in-memory database, so pytest does not need Aurora.
-# The running app still connects to Aurora through .env.
+# Unit tests use an in-memory database, so pytest does not need MySQL.
+# The running app still connects to MySQL through .env.
 
 
 @pytest.fixture
@@ -25,7 +25,7 @@ def empty_store():
 
 @pytest.fixture
 def down_store():
-    """Storage pointed at a closed port, so Aurora cannot be reached."""
+    """Storage pointed at a closed port, so MySQL cannot be reached."""
     return EquipmentStorage(
         host="127.0.0.1",
         port=1,

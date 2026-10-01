@@ -1,3 +1,5 @@
+import threading
+
 import pytest
 from sample_data import (
     BATS,
@@ -150,3 +152,45 @@ def test_delete_ticket(store):
 def test_delete_ticket_raises_when_missing(store):
     with pytest.raises(TicketNotFoundError):
         store.delete_ticket("does-not-exist")
+
+
+class _FakeConnection:
+    def __init__(self):
+        self.open = True
+
+    def close(self):
+        self.open = False
+
+
+def test_each_thread_gets_its_own_mysql_connection(monkeypatch):
+    def connect(**_kwargs):
+        return _FakeConnection()
+
+    monkeypatch.setattr("equipment.db.pymysql.connect", connect)
+    storage = EquipmentStorage(
+        host="127.0.0.1",
+        port=3306,
+        user="locker",
+        password="",
+        database="equipment",
+    )
+    barrier = threading.Barrier(2)
+    seen = []
+
+    def worker():
+        barrier.wait()
+        seen.append(storage._connect())
+
+    threads = [threading.Thread(target=worker) for _ in range(2)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join()
+
+    assert seen[0] is not seen[1]
+
+    first = storage._connect()
+    assert storage._connect() is first
+    storage.close()
+    assert first.open is False
+    assert storage._connect() is not first

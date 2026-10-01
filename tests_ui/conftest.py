@@ -1,7 +1,7 @@
 """Shared setup for Playwright acceptance tests.
 
 Assumes the Flask app is already running on port 5000 and .env points at
-the same Aurora database the app opened. This file checks that the app is
+the same MySQL database the app opened. This file checks that the app is
 healthy and resets that database between tests.
 """
 
@@ -31,7 +31,7 @@ def pytest_sessionstart(session):
     except (urllib.error.URLError, OSError) as exc:
         pytest.exit(
             f"App not reachable at {BASE_URL}. "
-            "Set the AURORA_* values in .env, create the tables, and run "
+            "Set the MYSQL_* values in .env, create the tables, and run "
             "python -m equipment.app.\n"
             f"Details: {exc}",
             returncode=1,
