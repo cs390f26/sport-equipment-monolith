@@ -33,11 +33,16 @@ systemctl daemon-reload
 systemctl disable mysqld.service
 systemctl enable --now mysql-local.service
 
-# First boot generates a temporary root password. Set it to MYSQL_PASSWORD
-# and allow TCP connections to 127.0.0.1, which is what the app uses.
+# First boot generates a temporary root password. MySQL 8.4 installs
+# validate_password at MEDIUM, which rejects MYSQL_PASSWORD from .env
+# (ERROR 1819). An expired password only allows ALTER USER, so set a
+# policy-compliant password first, remove the policy, then apply MYSQL_PASSWORD.
+# Also allow TCP connections to 127.0.0.1, which is what the app uses.
 MYSQL_PASSWORD="$(awk -F= '/^MYSQL_PASSWORD=/ {print substr($0, index($0, "=")+1)}' .env)"
 TEMP_PASSWORD="$(awk '/temporary password/ {print $NF}' /var/log/mysqld.log | tail -n 1)"
-mysql --connect-expired-password -uroot -p"${TEMP_PASSWORD}" --execute "ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_PASSWORD}';"
+mysql --connect-expired-password -uroot -p"${TEMP_PASSWORD}" --execute "ALTER USER 'root'@'localhost' IDENTIFIED BY 'EquipBoot1!';"
+mysql -uroot -p'EquipBoot1!' --execute "UNINSTALL COMPONENT 'file://component_validate_password';"
+mysql -uroot -p'EquipBoot1!' --execute "ALTER USER 'root'@'localhost' IDENTIFIED BY '${MYSQL_PASSWORD}';"
 mysql -uroot -p"${MYSQL_PASSWORD}" --execute "CREATE USER IF NOT EXISTS 'root'@'127.0.0.1' IDENTIFIED BY '${MYSQL_PASSWORD}'; ALTER USER 'root'@'127.0.0.1' IDENTIFIED BY '${MYSQL_PASSWORD}'; GRANT ALL PRIVILEGES ON *.* TO 'root'@'127.0.0.1' WITH GRANT OPTION; FLUSH PRIVILEGES;"
 
 .venv/bin/python scripts/wait_for_mysql.py
