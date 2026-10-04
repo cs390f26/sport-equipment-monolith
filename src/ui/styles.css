@@ -372,6 +372,10 @@ input:focus-visible {
   font-weight: 600;
 }
 
+.alert:empty {
+  display: none;
+}
+
 .notice {
   padding: 0.9rem 1rem;
   border-radius: 12px;

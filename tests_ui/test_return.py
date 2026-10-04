@@ -41,3 +41,5 @@ def test_unknown_ticket_shows_not_found(page, locker_storage):
     error = page.locator("#page-error")
     error.wait_for()
     assert "not found" in error.inner_text().lower()
+    assert error.get_attribute("role") == "alert"
+    assert "alert" in error.get_attribute("class").split()

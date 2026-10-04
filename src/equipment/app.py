@@ -53,7 +53,7 @@ def create_app(locker_app: LockerApp) -> Flask:
 
     @app.get("/")
     def index():
-        return send_from_directory(app.static_folder, "index.html")
+        return send_from_directory(app.static_folder, "equipment.html")
 
     @app.get("/health")
     def health():

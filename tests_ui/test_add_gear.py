@@ -32,4 +32,6 @@ def test_add_gear_shows_error_when_name_missing(page, locker_storage):
     error = page.locator("#form-error")
     error.wait_for()
     assert "name" in error.inner_text().lower()
+    assert error.get_attribute("role") == "alert"
+    assert "alert" in error.get_attribute("class").split()
     assert "/equipment/new" in page.url
