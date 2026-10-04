@@ -37,6 +37,8 @@ def test_create_ticket_shows_error_when_none_are_available(page, sample_locker):
     error = page.locator("#form-error")
     error.wait_for()
     assert "available" in error.inner_text().lower()
+    assert error.get_attribute("role") == "alert"
+    assert "alert" in error.get_attribute("class").split()
     assert f"equipmentId={BATS.equipment_id}" in page.url
 
 

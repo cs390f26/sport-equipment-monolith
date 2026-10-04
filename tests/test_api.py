@@ -15,7 +15,7 @@ def client(store):
 def test_root_serves_ui(client):
     response = client.get("/")
     assert response.status_code == 200
-    assert "Riverside Little League" in response.get_data(as_text=True)
+    assert '<h1>Available gear</h1>' in response.get_data(as_text=True)
 
 
 def test_health_ok(client):
@@ -83,7 +83,7 @@ def test_add_equipment(client):
 def test_add_equipment_bad_request(client):
     response = client.post("/equipment", json={"itemName": "   ", "total": 12})
     assert response.status_code == 400
-    assert response.get_json() == {"message": "itemName must not be blank"}
+    assert response.get_json() == {"message": "The item name must not be blank."}
 
 
 def test_add_equipment_requires_json(client):
@@ -144,7 +144,10 @@ def test_create_ticket_conflict_when_none_available(client, store):
     )
     assert response.status_code == 409
     assert response.get_json() == {
-        "message": "quantity is greater than the available quantity"
+        "message": (
+            "Not enough equipment is available for that request. "
+            "Please choose a smaller quantity."
+        )
     }
 
 
@@ -164,7 +167,7 @@ def test_create_ticket_bad_request(client, store):
         json={"name": "Alex", "quantity": 0, "equipmentId": GLOVES.equipment_id},
     )
     assert response.status_code == 400
-    assert response.get_json() == {"message": "quantity must be at least 1"}
+    assert response.get_json() == {"message": "The quantity must be at least 1."}
 
 
 def test_get_ticket(client, store):

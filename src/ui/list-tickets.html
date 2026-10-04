@@ -62,7 +62,7 @@
     if (!equipmentId) {
       itemNameEl.textContent = 'Equipment not selected';
       statEl.textContent = 'Missing equipment ID';
-      ticketList.innerHTML = '<p class="page-error">No equipment selected.</p>';
+      ticketList.innerHTML = '<p class="alert page-error" role="alert">No equipment selected.</p>';
       addTicketLink.href = 'equipment.html';
     } else {
       addTicketLink.href = `create-ticket.html?equipmentId=${equipmentId}`;
@@ -104,7 +104,7 @@
           console.error(error);
           itemNameEl.textContent = 'Unable to load tickets';
           statEl.textContent = 'Error';
-          ticketList.innerHTML = '<p class="page-error">Unable to load this item\'s tickets.</p>';
+          ticketList.innerHTML = '<p class="alert page-error" role="alert">Unable to load this item\'s tickets.</p>';
         });
     }
   </script>
