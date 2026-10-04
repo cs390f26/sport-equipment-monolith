@@ -77,7 +77,10 @@
     }
 
     loadEquipment().catch((error) => {
-      document.querySelector('.stat-pill').textContent = 'Unable to load equipment';
+      const stat = document.querySelector('.stat-pill');
+      stat.classList.add('alert');
+      stat.setAttribute('role', 'alert');
+      stat.textContent = 'Unable to load equipment';
       console.error(error);
     });
   </script>
