@@ -1,18 +1,26 @@
-"""Load scenario 1 from the specs sample data into MySQL.
+"""Load start data from data/sample-data.sql into MySQL.
 
 The tables must already exist (python scripts/create_table.py).
+CREATE TABLE statements in the SQL file are skipped.
 """
 
 import sys
 from pathlib import Path
-
 from equipment.db import DatabaseUnavailableError, EquipmentStorage
 from equipment.settings import ensure_settings
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / "tests"))
+SAMPLE_SQL = ROOT / "data" / "sample-data.sql"
 
-from sample_data import load_locker
+
+def _insert_statements(sql_text: str) -> list[str]:
+    """Return INSERT statements, ignoring CREATE TABLE."""
+    statements = []
+    for chunk in sql_text.split(";"):
+        statement = chunk.strip()
+        if statement.upper().startswith("INSERT"):
+            statements.append(statement)
+    return statements
 
 
 def _ask_replace_or_quit() -> str:
@@ -34,6 +42,15 @@ def main() -> None:
         print(exc, file=sys.stderr)
         sys.exit(1)
 
+    if not SAMPLE_SQL.is_file():
+        print(f"Sample data file not found: {SAMPLE_SQL}", file=sys.stderr)
+        sys.exit(1)
+
+    statements = _insert_statements(SAMPLE_SQL.read_text())
+    if not statements:
+        print(f"No INSERT statements in {SAMPLE_SQL}", file=sys.stderr)
+        sys.exit(1)
+
     storage = EquipmentStorage.from_settings(settings)
     try:
         storage.ping()
@@ -42,7 +59,8 @@ def main() -> None:
                 print("Seeding stopped.")
                 sys.exit(1)
             storage.clear_all()
-        load_locker(storage)
+        for statement in statements:
+            storage._execute(statement, commit=True)
     except DatabaseUnavailableError as exc:
         print(
             "MySQL is missing or unreachable. "
@@ -54,7 +72,7 @@ def main() -> None:
     finally:
         storage.close()
 
-    print("Seeded scenario 1 (browse equipment).")
+    print("Seeded start data from data/sample-data.sql.")
 
 
 if __name__ == "__main__":
