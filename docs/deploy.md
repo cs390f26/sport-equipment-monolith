@@ -4,7 +4,7 @@ This document explains how to run the monolithic equipment app on an EC2 instanc
 
 ## Deploy Process
 
-The script `deploy/userdata.sh` handles all the steps outlined in [Development](docs/deploy.md), and we can tell EC2 to run these commands at launch by putting the contents of this script in the [Cloud-init](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html#userdata-linux) which is under the userdata section of the EC2 launch wizard.
+The script `deploy/userdata.sh` handles all the steps outlined in [Development](docs/development.md), and we can tell EC2 to run these commands at launch by putting the contents of this script in the [Cloud-init](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/user-data.html#userdata-linux) which is under the userdata section of the EC2 launch wizard.
 
 In the Launch dialog:
 
@@ -15,7 +15,7 @@ In the Launch dialog:
 - Open the "Advanced" tab, and scroll to the bottom.
 - Paste the contents of `deploy/userdata.sh` into **User data**
 
-When you launch the instance, AWS will boot the instance, and then run the userdata script. This will take a minute or two, but once it completes MySQL and Gunicorn will be running (i.e. the app will be deployed).
+When you launch the instance, AWS will boot the instance, and then run the userdata script. This will take a minute or two, but once it completes MySQL and Gunicorn will be running (i.e. the app will be deployed). In a browser, enter `http://<Public IPv4 address>` to view app.
 
 ## Debugging
 

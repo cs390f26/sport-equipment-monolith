@@ -9,7 +9,7 @@ This is the monolithic implementation of the Equipment application. See the **sp
 | Doc                                      | Contents                                                                        |
 | ---------------------------------------- | ------------------------------------------------------------------------------- |
 | [Development setup](docs/development.md) | Virtualenv, install, requirements, `.env`, MySQL, run the app, acceptance tests |
-| [Deploy on EC2](docs/deploy-ec2.md)      | Security group, user data, systemd, debugging                                   |
+| [Deploy on EC2](docs/deploy.md)      | Security group, user data, systemd, debugging                                   |
 
 ## Quick start
 

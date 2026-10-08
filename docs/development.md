@@ -23,6 +23,8 @@ python3 -m venv .venv
 source .venv/bin/activate
 ```
 
+
+
 ## 2. Upgrade pip and install dependencies
 
 Install the required Python libraries:
@@ -49,7 +51,7 @@ The example file contains the required MySQL settings:
 MYSQL_HOST=127.0.0.1
 MYSQL_PORT=3306
 MYSQL_USER=root
-MYSQL_PASSWORD=<replace with your password>
+MYSQL_PASSWORD=
 MYSQL_DATABASE=equipment
 ```
 
@@ -57,11 +59,36 @@ Update the values to match your local database setup. The app loads these values
 
 > The app will fail to start if any required setting is missing.
 
-## 4. Start the database
+
+
+## 4. Setup the database
+
+Install mysql in a new terminal.
+
+```bash
+brew install mysql
+```
+
+Check that mysql is running.
+
+```bash
+brew services list
+```
+
+Start mysql, if not running.
+
+```bash
+brew services start mysql
+```
+
+
+
+## 5. Start the database
 
 Make sure your MySQL server is running before starting the app in a new terminal.
+
 ```bash
-mysql -u root -p
+mysql -u root
 ```
 
 If you are using a fresh local database, create the required tables in virtual environment:
@@ -87,7 +114,9 @@ USE equipment;
 SHOW TABLES;
 ```
 
-## 5. Start the app
+
+
+## 6. Start the app
 
 Once the database is available and the environment is configured, run in virtual environment:
 
@@ -105,12 +134,12 @@ http://127.0.0.1:5000
 
 The app serves the equipment UI and API endpoints from the Flask server.
 
-## 6. Run tests
+## 7. Run tests
 
 The repository uses `pytest` for automated tests. From the project root after installing dependencies:
 
 ```bash
-pytest -q
+pytest
 ```
 
 This is the standard verification command for the project. Unit tests use an in-memory SQLite database, so they do not require a running MySQL server. The application itself, however, still expects the configured MySQL connection when running the full app.
@@ -128,6 +157,8 @@ This is the standard verification command for the project. Unit tests use an in-
 python -m pip install -r requirements.txt
 python -m pip install -e .
 ```
+
+
 
 ## Typical quick-start sequence
 
