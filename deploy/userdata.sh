@@ -60,7 +60,7 @@ if [ -z "$TEMP_PASSWORD" ]; then
 fi
 
 # Generate 48 hexadecimal characters.
-MYSQL_PASSWORD="$(openssl rand -hex 32)"
+MYSQL_PASSWORD="Aa1!$(openssl rand -hex 28)"
 
 # Restrict newly created files to the current user.
 umask 077
