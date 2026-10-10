@@ -1,8 +1,8 @@
 [Unit]
 Description=Equipment locker (gunicorn)
-After=network-online.target mysql-local.service
+After=network-online.target mysqld.service
 Wants=network-online.target
-Requires=mysql-local.service
+Requires=mysqld.service
 
 [Service]
 Type=simple
